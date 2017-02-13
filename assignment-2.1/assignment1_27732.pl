@@ -27,6 +27,7 @@ q4d(). % TODO: ?
 % Q5a - Write a predicate called q5_corner_move/0 that moves the agent between all 4 corner squares in the world, in any order. The agent should not visit any other squares.
 
 q5_corner_move :-
+  ailp_start_position(p(1, 1)),
   ailp_show_move(p(1,1),p(1,4)),
   ailp_show_move(p(1,4),p(4,4)),
   ailp_show_move(p(4,4),p(4,1)),
@@ -35,11 +36,17 @@ q5_corner_move :-
 % Q5b - Write another predicate q5_corner_move2/0 that uses this ailp_grid_size/1 predicate so that the agent moves between the corners no matter the size of the grid. (i.e. the locations are not hard coded)
 q5_corner_move2 :-
   ailp_grid_size(S),
+  ailp_start_position(p(1, 1)),
   ailp_show_move(p(1,1), p(1, S)),
   ailp_show_move(p(1,S), p(S, S)),
   ailp_show_move(p(S,S), p(S, 1)),
   ailp_show_move(p(S,1), p(1, 1)).
 
 % Q6 - Write another predicate q5_corner_move2/0 that uses this ailp_grid_size/1 predicate so that the agent moves between the corners no matter the size of the grid. (i.e. the locations are not hard coded)
-% q6_spiral(L) :-
+% TODO
+%   - Move to the right, then when hit wall down, then when hit wall, left, then up. Use the grid size to know if hit a wall or not. 
+%   - Once come across cell which is already in path, then move to p(2, 2) then p(3, 3) until at p(S/2, S/2) which is one of the centre squares in which case stop
+q6_spiral(L) :-
+  ailp_start_position(p(1, 1)).
+
 
