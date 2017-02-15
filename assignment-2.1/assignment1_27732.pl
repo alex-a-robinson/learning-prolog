@@ -49,6 +49,8 @@ q5_corner_move2 :-
 % TODO
 %   - Move to the right, then when hit wall down, then when hit wall, left, then up. Use the grid size to know if hit a wall or not. 
 %   - Once come across cell which is already in path, then move to p(2, 2) then p(3, 3) until at p(S/2, S/2) which is one of the centre squares in which case stop
+q6_spiral(L) :- q6_spiral([]).
+
 q6_spiral([]) :-
   ailp_start_position(p(1, 1)),
   q6_spiral([p(1, 1)]).
@@ -60,7 +62,7 @@ q6_spiral([p(X,Y),p(X1,Y1)|L]) :-
   ; Y1 = S -> Y = Y1,    X is X1-1
   ; X1 = 1 -> Y is Y1-1, X = X1
   ),
-  (member(p(X,Y), [p(X1,Y1)|L]) -> X is X1, Y is Y1+1).
+  (member(p(X,Y), [p(X1,Y1)|L]) -> X is X1, Y is Y1+1),
   X >= 1, Y >= 1,
-  X =< S, Y =< S,
+  X =< S, Y =< S.
   
