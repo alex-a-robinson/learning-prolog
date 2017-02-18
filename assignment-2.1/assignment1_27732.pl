@@ -13,16 +13,16 @@ q2b(109). % X1 >= 1, Y1 >=1,
 q3([s,e,w,n]). % Based on order they appear in file
 
 % Q4a - Path from starting position until first dead end (before agent starts backtracking)
-q4b([p(1,1),p(2,1),p(3,1),p(4,1),p(4,2),p(3,2),p(2,2),p(1,2),p(1,3),p(2,3),p(3,3),p(4,3),p(4,4),p(3,4),p(2,4),p(1,4)]). % TODO: Check this
+q4b([]).
 
 % Q4b - After backtracking once and thereby avoiding the first dead end, give the full path from the starting position to the second dead end.
-q4b([p(4,2),p(4,1),p(3,1),p(3,2),p(2,2),p(1,2),p(1,3),p(2,3),p(3,3),p(4,3),p(4,4),p(3,4),p(2,4),p(1,4)]). % TODO: Check this
+q4b([]).
 
 % Q4c - ve the first full path covering the whole grid found by the agent.
-q4c(). % TODO: backtracking?
+q4c([p(1, 4), p(2, 4), p(3, 4), p(4, 4), p(4, 3), p(3, 3), p(2, 3), p(1, 3), p(1, 2), p(2, 2), p(3, 2), p(4, 2), p(4, 1), p(3, 1), p(2, 1), p(1, 1)]).
 
 % Q4d - Give the second full path covering the whole grid found by the agent.
-q4d(). % TODO: ?
+q4d([p(1, 4), p(2, 4), p(3, 4), p(4, 4), p(4, 3), p(3, 3), p(2, 3), p(1, 3), p(1, 2), p(1, 1), p(2, 1), p(2, 2), p(3, 2), p(4, 2), p(4, 1), p(3, 1)]).
 
 % Q5a - Write a predicate called q5_corner_move/0 that moves the agent between all 4 corner squares in the world, in any order. The agent should not visit any other squares.
 
@@ -44,25 +44,60 @@ q5_corner_move2 :-
   ailp_show_move(p(S,S), p(S, 1)),
   ailp_show_move(p(S,1), p(1, 1)).
 
-% Q6 -Write a predicate q6_spiral/1 that has a single argument being the path taken by the agent. The agent should start in one of the outer squares (any square next to the edge of the board), and cover the board in a spiral (either clockwise or anticlockwise) such that it ends in one of the 4 central positions.
 
-% TODO
-%   - Move to the right, then when hit wall down, then when hit wall, left, then up. Use the grid size to know if hit a wall or not. 
-%   - Once come across cell which is already in path, then move to p(2, 2) then p(3, 3) until at p(S/2, S/2) which is one of the centre squares in which case stop
-q6_spiral(L) :- q6_spiral([]).
-
-q6_spiral([]) :-
-  ailp_start_position(p(1, 1)),
-  q6_spiral([p(1, 1)]).
-
-q6_spiral([p(X,Y),p(X1,Y1)|L]) :-
-  ailp_grid_size(S),
-  ( Y1 = 1 -> Y = Y1,    X is X1+1
-  ; X1 = S -> Y is Y1+1, X = X1
-  ; Y1 = S -> Y = Y1,    X is X1-1
-  ; X1 = 1 -> Y is Y1-1, X = X1
+move(p(X,Y), Direction, Length, p(X1,Y1)) :-
+  ( Direction = s -> X1 is X,   Y1 is Y+1
+  ; Direction = n -> X1 is X,   Y1 is Y-1
+  ; Direction = e -> X1 is X+1, Y1 is Y
+  ; Direction = w -> X1 is X-1, Y1 is Y
   ),
-  (member(p(X,Y), [p(X1,Y1)|L]) -> X is X1, Y is Y1+1),
-  X >= 1, Y >= 1,
-  X =< S, Y =< S.
+  X1 >= 1, Y1 >= 1,
+  X1 =< Length, Y1 =< Length.
+
+direction(e, _, _, p(1, 1)).
+direction(n, _, Length, p(1, Length)).
+direction(w, _, Length, p(Length, Length)).
+direction(s, _, Length, p(Length, 1)).
+direction(LastDirection, LastDirection, _, _).
+
+% Path of a square with sides of length N and offset from position P
+square([p(1, 1)], 1).
+square(Path, Length) :-
+  Length > 1,
+  once(square([], Length, p(1, 1), e, Path)).
+
+% When we have done the correct number of iterations
+square(L, Length, _, _, L) :-
+  N is Length*4-4,
+  length(L, N).
+
+square(L, Length, LastPoint, LastDirection, Path) :-
+  direction(Direction, LastDirection, Length, LastPoint),
+  move(LastPoint, Direction, Length, NewPoint),
+  \+ memberchk(NewPoint, L),
+  square([NewPoint|L], Length, NewPoint, Direction, Path).
+
+offset([], _, []).
+offset([p(X,Y)|L], p(XO,YO), [p(X1,Y1)|LO]) :-
+  X1 is X+XO, Y1 is Y+YO,
+  offset(L, p(XO,YO), LO).
+
+% Q6 -Write a predicate q6_spiral/1 that has a single argument being the path taken by the agent. The agent should start in one of the outer squares (any square next to the edge of the board), and cover the board in a spiral (either clockwise or anticlockwise) such that it ends in one of the 4 central positions.
+q6_spiral(L) :- 
+  ailp_grid_size(N),
+  q6_spiral([], N, 0, L).
+
+q6_spiral(L, _, _, L) :-
+  ailp_grid_size(N),
+  N1 is N*N,
+  length(L, N1).
+  
+q6_spiral(L, N, I, Ls) :-
+  N >= 1,
+  square(P, N),
+  offset(P, p(I, I), P1),
+  append(L, P1, L1),
+  I1 is I + 1,
+  N1 is N - 2,
+  q6_spiral(L1, N1, I1, Ls).
   
