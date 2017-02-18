@@ -85,7 +85,8 @@ offset([p(X,Y)|L], p(XO,YO), [p(X1,Y1)|LO]) :-
 % Q6 -Write a predicate q6_spiral/1 that has a single argument being the path taken by the agent. The agent should start in one of the outer squares (any square next to the edge of the board), and cover the board in a spiral (either clockwise or anticlockwise) such that it ends in one of the 4 central positions.
 q6_spiral(L) :- 
   ailp_grid_size(N),
-  q6_spiral([], N, 0, L).
+  q6_spiral([], N, 0, L),
+  show_path(L).
 
 q6_spiral(L, _, _, L) :-
   ailp_grid_size(N),
@@ -100,4 +101,14 @@ q6_spiral(L, N, I, Ls) :-
   I1 is I + 1,
   N1 is N - 2,
   q6_spiral(L1, N1, I1, Ls).
-  
+ 
+show_path([H|L]) :-
+  ailp_start_position(X),
+  ailp_show_move(X, H),
+  show_path(L, H).
+ 
+show_path([], _).
+
+show_path([H|L], C) :-
+  ailp_show_move(C, H),
+  show_path(L, H).
